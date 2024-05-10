@@ -1,4 +1,31 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
+li {
+  list-style: none;
+}
+
+a {
+  text-decoration: none;
+  color: rgb(0, 0, 0);
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+td {
+  font-size: 3em;
+  border: 1px solid gray;
+  width: 50px;
+  text-align: center;
+}
 
 
 
