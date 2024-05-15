@@ -4,7 +4,7 @@ console.log("You must defeat Skynet to prevent it from launching its nukes.");
 console.log("Turn 1");
 
 
-// Gameboard object to store the game status
+                                  // Gameboard Module: Handles the game state
 const Gameboard = (() => {
   let board = [                                     // The board variable is encapsulated
     ["", "", ""],
@@ -12,33 +12,52 @@ const Gameboard = (() => {
     ["", "", ""]
   ];
 
-  return { getBoard: () => board };                 // Return an object with the getBoard method,
+  const getBoard = () => board;
+
+  const isCellEmpty = (index) => board[index] === '';
+
+  const markCell = (index, marker) => {            // ensures that a cell can only be marked if it is empty
+    if (isCellEmpty(index)) {
+      board[index] = marker;
+      return true;
+    }
+    return false;
+  };
+
+  const resetBoard = () => {
+    board = ['', '', '', '', '', '', '', '', ''];
+  };
+
+  return { getBoard, markCell, resetBoard };                 // Return an object with the getBoard method,
 })();                                               // which retrieves the board array.
 console.log(Gameboard.getBoard());
-                                                    // END OF Gameboard Module.
+                                  // ---***END OF Gameboard Module***---
   
 
-// Players object
+                                  // Player Factory: Creates player objects
 const Player = (() => {
-  const players = [                                 // Again encapsulated by closure.
+  const players = [                                 
     {
       name: "You",
-      token: "X"
+      marker: "X"
     },
     {
       name: "Skynet",
-      token: "O"
+      marker: "O"
     }
   ];
   
   return { getPlayers: () => players };             // The two players objects are made public
 })();                                               // indirectly, through the 'getPlayers' method.
 console.log(Player.getPlayers());
-                                                    // END OF Players Module.
+                                  // ---***END OF Players Factory***---
 
 
-// Game object to control the flow of the game
+                                  // Game Module: Controls the flow of the game
 const Game = (() => {
+  const player1 = Player.getPlayers()[0];
+  const player2 = Player.getPlayers()[1];
+  let currentPlayer = player1;
   let gameOver = false;
 
   const checkWin = (board, marker) => {                   // Can access the board through the .getboard
@@ -55,18 +74,34 @@ const Game = (() => {
 
   const checkDraw = (board) => !board.some(cell => cell === ''); // If there are no empty cells, return True.
 
-  const handleCellClick = (index) => {
-    if (!gameOver && Gameboard.markCell(index, currentPlayer.marker)) {
+  const handlePlayer1Click = (index) => {
+    if (!gameOver && Gameboard.markCell(index, player1.marker)) {
       render();
       if (checkWin(Gameboard.getBoard(), currentPlayer.marker)) {
-        alert(`${currentPlayer.name} wins!`);
+        console.log("Congratulations, you defeated Skynet!");
         gameOver = true;
       } else if (checkDraw(Gameboard.getBoard())) {
-        alert('It\'s a draw!');
+        console.log("It\'s a draw! Skynet\'s timer is reset. Play again to prevent it from launching its nukes");
         gameOver = true;
       } else {
         switchPlayer();
       }
     }
   };
-});
+
+  const render = () => {
+    const cells = document.querySelectorAll('.cell');
+    cells.forEach((cell, index) => {
+      cell.textContent = Gameboard.getBoard()[index];
+    });
+  };
+
+  const resetGame = () => {
+    Gameboard.resetBoard();
+    currentPlayer = player1;
+    gameOver = false;
+    render();
+  };
+  
+})();
+                                  // ---***END OF Game Module***---
