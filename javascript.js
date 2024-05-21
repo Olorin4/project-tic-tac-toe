@@ -6,17 +6,13 @@ console.log("Turn 1");
 
                                   // Gameboard Module: Handles the game state
 const Gameboard = (() => {
-  let board = [                                     // The board variable is encapsulated
-    ["", "", ""],
-    ["", "", ""],
-    ["", "", ""]
-  ];
+  let board = ["", "", "", "", "", "", "", "", ""];// The board variable is encapsulated
 
   const getBoard = () => board;
 
-  const isCellEmpty = (index) => board[index] === '';
+  const isCellEmpty = (index) => board[index] === "";
 
-  const markCell = (index, marker) => {            // ensures that a cell can only be marked if it is empty
+  const markCell = (index, marker) => {            // Marks a cell only if it is empty
     if (isCellEmpty(index)) {
       board[index] = marker;
       return true;
@@ -28,7 +24,7 @@ const Gameboard = (() => {
     board = ['', '', '', '', '', '', '', '', ''];
   };
 
-  return { getBoard, markCell, resetBoard };                 // Return an object with the getBoard method,
+  return { getBoard, isCellEmpty, markCell, resetBoard };        // Return an object with the getBoard method,
 })();                                               // which retrieves the board array.
 console.log(Gameboard.getBoard());
                                   // ---***END OF Gameboard Module***---
@@ -74,17 +70,29 @@ const Game = (() => {
 
   const checkDraw = (board) => !board.some(cell => cell === ''); // If there are no empty cells, return True.
 
+  const handlePlayer2Click = () => {
+    let index = Math.floor(Math.random() * 9);
+    if (!Gameboard.isCellEmpty(index)) {
+      handlePlayer2Click();
+      return;
+    } else {
+      render();
+    }
+    Gameboard.markCell(index, player2.marker);
+    render();
+  };
+
   const handlePlayer1Click = (index) => {
     if (!gameOver && Gameboard.markCell(index, player1.marker)) {
       render();
-      if (checkWin(Gameboard.getBoard(), currentPlayer.marker)) {
-        console.log("Congratulations, you defeated Skynet!");
+      if (checkWin(Gameboard.getBoard(), player1.marker)) {
+        console.log("Congratulations, you defeated Skynet! Humanity is safe.");
         gameOver = true;
       } else if (checkDraw(Gameboard.getBoard())) {
-        console.log("It\'s a draw! Skynet\'s timer is reset. Play again to prevent it from launching its nukes");
+        console.log("It\'s a draw! Skynet\'s launch countdown is reset. Play again to prevent it from launching its nukes");
         gameOver = true;
       } else {
-        switchPlayer();
+        handlePlayer2Click();
       }
     }
   };
@@ -103,5 +111,15 @@ const Game = (() => {
     render();
   };
   
+  return { handlePlayer1Click, render };
+
 })();
                                   // ---***END OF Game Module***---
+                                  
+
+document.querySelectorAll('.cell').forEach((cell, index) => {
+  cell.addEventListener('click', () => Game.handlePlayer1Click(index));
+});
+
+// Initial render
+Game.render();
