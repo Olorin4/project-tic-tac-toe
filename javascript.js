@@ -70,16 +70,28 @@ const Game = (() => {
 
   const checkDraw = (board) => !board.some(cell => cell === ''); // If there are no empty cells, return True.
 
+  const switchPlayer = () => {
+    currentPlayer = currentPlayer === player1 ? player2 : player1;
+  };
+
   const handlePlayer2Click = () => {
-    let index = Math.floor(Math.random() * 9);
-    if (!Gameboard.isCellEmpty(index)) {
-      handlePlayer2Click();
-      return;
-    } else {
+    let index;
+    do {
+      index = Math.floor(Math.random() * 9);
+    } while (!Gameboard.isCellEmpty(index));
+
+    if (Gameboard.markCell(index, player2.marker)) {
       render();
+      if (checkWin(Gameboard.getBoard(), player2.marker)) {
+        console.log("Skynet wins! The future is now uncertain...");
+        gameOver = true;
+      } else if (checkDraw(Gameboard.getBoard())) {
+        console.log("It's a draw! Skynet's launch countdown is reset. Play again to prevent it from launching its nukes.");
+        gameOver = true;
+      } else {
+        switchPlayer();
+      }
     }
-    Gameboard.markCell(index, player2.marker);
-    render();
   };
 
   const handlePlayer1Click = (index) => {
