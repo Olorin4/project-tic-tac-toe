@@ -139,3 +139,9 @@ document.querySelector('.resetButton').addEventListener('click', () => {
 
 // Initial render
 Game.render();
+
+
+// TO DO:
+// 1. Add multiplayer & singleplayer functionality.
+// 2. Add more complex AI game logic.
+// 3. Upgrade UI.
