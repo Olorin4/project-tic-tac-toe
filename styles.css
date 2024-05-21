@@ -43,6 +43,9 @@ body {
   width: 100px;
 }
 
+.buttons {
+  margin-bottom: 5px;
+}
 button {
   background-color: #5FF2E3;
   border-radius: 5px;

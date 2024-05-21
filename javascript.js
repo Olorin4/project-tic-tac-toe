@@ -74,6 +74,21 @@ const Game = (() => {
     currentPlayer = currentPlayer === player1 ? player2 : player1;
   };
 
+  const handlePlayer1Click = (index) => {
+    if (!gameOver && Gameboard.markCell(index, player1.marker)) {
+      render();
+      if (checkWin(Gameboard.getBoard(), player1.marker)) {
+        console.log("Congratulations, you defeated Skynet! Humanity is safe.");
+        gameOver = true;
+      } else if (checkDraw(Gameboard.getBoard())) {
+        console.log("It\'s a draw! Skynet\'s launch countdown is reset. Play again to prevent it from launching its nukes");
+        gameOver = true;
+      } else {
+        handlePlayer2Click();
+      }
+    }
+  };
+
   const handlePlayer2Click = () => {
     let index;
     do {
@@ -94,21 +109,6 @@ const Game = (() => {
     }
   };
 
-  const handlePlayer1Click = (index) => {
-    if (!gameOver && Gameboard.markCell(index, player1.marker)) {
-      render();
-      if (checkWin(Gameboard.getBoard(), player1.marker)) {
-        console.log("Congratulations, you defeated Skynet! Humanity is safe.");
-        gameOver = true;
-      } else if (checkDraw(Gameboard.getBoard())) {
-        console.log("It\'s a draw! Skynet\'s launch countdown is reset. Play again to prevent it from launching its nukes");
-        gameOver = true;
-      } else {
-        handlePlayer2Click();
-      }
-    }
-  };
-
   const render = () => {
     const cells = document.querySelectorAll('.cell');
     cells.forEach((cell, index) => {
@@ -123,7 +123,7 @@ const Game = (() => {
     render();
   };
   
-  return { handlePlayer1Click, render };
+  return { handlePlayer1Click, render, resetGame };
 
 })();
                                   // ---***END OF Game Module***---
@@ -131,6 +131,10 @@ const Game = (() => {
 
 document.querySelectorAll('.cell').forEach((cell, index) => {
   cell.addEventListener('click', () => Game.handlePlayer1Click(index));
+});
+
+document.querySelector('.resetButton').addEventListener('click', () => {
+  Game.resetGame();
 });
 
 // Initial render
