@@ -76,7 +76,7 @@ const Game = (() => {
 
   const handlePlayer1Click = (index) => {
     if (!gameOver && Gameboard.markCell(index, player1.marker)) {
-      render();
+      DisplayController.render();
       if (checkWin(Gameboard.getBoard(), player1.marker)) {
         console.log("Congratulations, you defeated Skynet! Humanity is safe.");
         gameOver = true;
@@ -96,7 +96,7 @@ const Game = (() => {
     } while (!Gameboard.isCellEmpty(index));
 
     if (Gameboard.markCell(index, player2.marker)) {
-      render();
+      DisplayController.render();
       if (checkWin(Gameboard.getBoard(), player2.marker)) {
         console.log("Skynet wins! The future is now uncertain...");
         gameOver = true;
@@ -109,41 +109,42 @@ const Game = (() => {
     }
   };
 
-  const render = () => {
-    const cells = document.querySelectorAll('.cell');
-    cells.forEach((cell, index) => {
-      cell.textContent = Gameboard.getBoard()[index];
-    });
-  };
-
   const resetGame = () => {
     Gameboard.resetBoard();
     currentPlayer = player1;
     gameOver = false;
-    render();
+    DisplayController.render();
   };
   
-  return { handlePlayer1Click, render, resetGame };
+  return { handlePlayer1Click, resetGame };
 
 })();
                                   // ---***END OF Game Module***---
                                   
                                   // Display Controller Module: Handles the display and DOM logic
 const DisplayController = (() => {
-  document.querySelectorAll('.cell').forEach((cell, index) => {
+  const render = () => {
+  const cells = document.querySelectorAll('.cell');
+    cells.forEach((cell, index) => {
+      cell.textContent = Gameboard.getBoard()[index];
+    });
+  };
+
+  cells.forEach((cell, index) => {
     cell.addEventListener('click', () => Game.handlePlayer1Click(index));
   });
 
-  document.querySelector('.resetButton').addEventListener('click', () => {
+  const resetButton = document.querySelector('#reset');
+  resetButton.addEventListener('click', () => {
     Game.resetGame();
   });
 
-  return {};
+  return { render };
 })();
                                     // ---***END OF Display Controller***---
 
 // Initial render
-Game.render();
+DisplayController.render();
 
 
 // TO DO:
