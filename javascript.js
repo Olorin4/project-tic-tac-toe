@@ -6,7 +6,7 @@ console.log("Turn 1");
 
                                   // Gameboard Module: Handles the game state
 const Gameboard = (() => {
-  let board = ["", "", "", "", "", "", "", "", ""];// The board variable is encapsulated
+  let board = ["", "", "", "", "", "", "", "", ""];
 
   const getBoard = () => board;
 
@@ -24,7 +24,7 @@ const Gameboard = (() => {
     board = ['', '', '', '', '', '', '', '', ''];
   };
 
-  return { getBoard, isCellEmpty, markCell, resetBoard };        // Return an object with the getBoard method,
+  return { getBoard, isCellEmpty, markCell, resetBoard };// Return an object with the getBoard method,
 })();                                               // which retrieves the board array.
 console.log(Gameboard.getBoard());
                                   // ---***END OF Gameboard Module***---
@@ -128,20 +128,26 @@ const Game = (() => {
 })();
                                   // ---***END OF Game Module***---
                                   
+                                  // Display Controller Module: Handles the display and DOM logic
+const DisplayController = (() => {
+  document.querySelectorAll('.cell').forEach((cell, index) => {
+    cell.addEventListener('click', () => Game.handlePlayer1Click(index));
+  });
 
-document.querySelectorAll('.cell').forEach((cell, index) => {
-  cell.addEventListener('click', () => Game.handlePlayer1Click(index));
-});
+  document.querySelector('.resetButton').addEventListener('click', () => {
+    Game.resetGame();
+  });
 
-document.querySelector('.resetButton').addEventListener('click', () => {
-  Game.resetGame();
-});
+  return {};
+})();
+                                    // ---***END OF Display Controller***---
 
 // Initial render
 Game.render();
 
 
 // TO DO:
-// 1. Add multiplayer & singleplayer functionality.
-// 2. Add more complex AI game logic.
-// 3. Upgrade UI.
+// 1. Replace console.logs with uI messages.
+// 2. Add multiplayer & singleplayer functionality.
+// 3. Add more complex AI game logic.
+// 4. Upgrade UI.
