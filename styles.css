@@ -46,10 +46,11 @@ h1 {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 72px;
+  font-size: 4rem;
   font-weight: bolder;
   height: 100px;
   width: 100px;
+  cursor: pointer;
 }
 
 .sidebar {
@@ -103,8 +104,12 @@ button:hover {
   width: 300px;
   text-align: center;
   font-weight: bold;
+  margin-top: 15px;
 }
 
+.display-controller button {
+  margin-top: 15px;
+}
 
 
 

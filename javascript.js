@@ -1,10 +1,9 @@
 // TIC TAC TOE
 
-console.log("You must defeat Skynet to prevent it from launching its nukes.");
 console.log("Turn 1");
 
 
-                                  // Gameboard Module: Handles the game state
+                                  // ---***Gameboard Module: Handles the game state***---
 const Gameboard = (() => {
   let board = ["", "", "", "", "", "", "", "", ""];
 
@@ -26,11 +25,10 @@ const Gameboard = (() => {
 
   return { getBoard, isCellEmpty, markCell, resetBoard };// Return an object with the getBoard method,
 })();                                               // which retrieves the board array.
-console.log(Gameboard.getBoard());
                                   // ---***END OF Gameboard Module***---
   
 
-                                  // Player Factory: Creates player objects
+                                  // ---***Player Factory: Creates player objects***---
 const Player = (() => {
   const players = [                                 
     {
@@ -42,14 +40,15 @@ const Player = (() => {
       marker: "O"
     }
   ];
-  
-  return { getPlayers: () => players };             // The two players objects are made public
-})();                                               // indirectly, through the 'getPlayers' method.
-console.log(Player.getPlayers());
+
+  const getPlayers = () => players;
+
+  return { getPlayers };                                // The two players objects are made public
+})();                                                   // indirectly, through the 'getPlayers' method.
                                   // ---***END OF Players Factory***---
 
 
-                                  // Game Module: Controls the flow of the game
+                                  // ---***Game Module: Controls the flow of the game***---
 const Game = (() => {
   const player1 = Player.getPlayers()[0];
   const player2 = Player.getPlayers()[1];
@@ -117,14 +116,19 @@ const Game = (() => {
   };
   
   return { handlePlayer1Click, resetGame };
-
 })();
                                   // ---***END OF Game Module***---
                                   
-                                  // Display Controller Module: Handles the display and DOM logic
+                                  // ---***Display Controller Module: Handles the display and DOM logic***---
 const DisplayController = (() => {
-  const render = () => {
   const cells = document.querySelectorAll('.cell');
+  const singlePlayerButton = document.querySelector('.single-player');
+  const output = document.querySelector('.output-display');
+  const turn = document.querySelector('.turn-counter');
+  const resetButton = document.querySelector('.resetButton');
+
+  const render = () => {
+    const board = Gameboard.getBoard();
     cells.forEach((cell, index) => {
       cell.textContent = Gameboard.getBoard()[index];
     });
@@ -134,17 +138,42 @@ const DisplayController = (() => {
     cell.addEventListener('click', () => Game.handlePlayer1Click(index));
   });
 
-  const resetButton = document.querySelector('#reset');
+  const singlePlayer = (() => {
+    singlePlayerButton.addEventListener('click', (e) => {
+      e.preventDefault();
+      output.textContent = "You must defeat Skynet to prevent it from launching its nukes."
+      createStartGameButton();
+    });
+  })();
+
+  const createStartGameButton = () => {
+    const startGameButton = document.createElement('button');
+    startGameButton.classList.add('start-game');
+    startGameButton.textContent = 'Start Game';
+    output.insertAdjacentElement('afterend', startGameButton);
+  
+    startGameButton.addEventListener('click', (e) => {
+      e.preventDefault();
+      output.textContent = "Game started! Turn 1";
+      updateTurnCounter(1);
+      // Add additional logic to start the game
+    });
+  };
+
+  const updateTurnCounter = (turn) => {
+    turnCounterDisplay.textContent = `Turn ${turn}`;
+  };
+
   resetButton.addEventListener('click', () => {
     Game.resetGame();
+    output.textContent = "Please choose game mode.";
   });
 
   return { render };
 })();
-                                    // ---***END OF Display Controller***---
-
-// Initial render
-DisplayController.render();
+                                    // ---***END OF Display Controller Module***---
+    
+                                    // ---***                                  
 
 
 // TO DO:
