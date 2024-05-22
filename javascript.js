@@ -1,8 +1,5 @@
 // TIC TAC TOE
 
-console.log("Turn 1");
-
-
                                   // ---***Gameboard Module: Handles the game state***---
 const Gameboard = (() => {
   let board = ["", "", "", "", "", "", "", "", ""];
@@ -54,6 +51,7 @@ const Game = (() => {
   const player2 = Player.getPlayers()[1];
   let currentPlayer = player1;
   let gameOver = false;
+  let turnCounter = 1;
 
   const checkWin = (board, marker) => {                   // Can access the board through the .getboard
     const winConditions = [
@@ -71,16 +69,18 @@ const Game = (() => {
 
   const switchPlayer = () => {
     currentPlayer = currentPlayer === player1 ? player2 : player1;
+    turnCounter++;
+    DisplayController.updateTurnCounter(turnCounter);
   };
 
   const handlePlayer1Click = (index) => {
     if (!gameOver && Gameboard.markCell(index, player1.marker)) {
       DisplayController.render();
       if (checkWin(Gameboard.getBoard(), player1.marker)) {
-        console.log("Congratulations, you defeated Skynet! Humanity is safe.");
+        DisplayController.showResult("Congratulations, you defeated Skynet! Humanity is safe.");
         gameOver = true;
       } else if (checkDraw(Gameboard.getBoard())) {
-        console.log("It\'s a draw! Skynet\'s launch countdown is reset. Play again to prevent it from launching its nukes");
+        DisplayController.showResult("It's a draw! Skynet's launch countdown is reset. Play again to prevent it from launching its nukes");
         gameOver = true;
       } else {
         handlePlayer2Click();
@@ -97,10 +97,10 @@ const Game = (() => {
     if (Gameboard.markCell(index, player2.marker)) {
       DisplayController.render();
       if (checkWin(Gameboard.getBoard(), player2.marker)) {
-        console.log("Skynet wins! The future is now uncertain...");
+        DisplayController.showResult("Skynet wins! The future is now uncertain...");
         gameOver = true;
       } else if (checkDraw(Gameboard.getBoard())) {
-        console.log("It's a draw! Skynet's launch countdown is reset. Play again to prevent it from launching its nukes.");
+        DisplayController.showResult("It's a draw! Skynet's launch countdown is reset. Play again to prevent it from launching its nukes.");
         gameOver = true;
       } else {
         switchPlayer();
@@ -124,7 +124,7 @@ const DisplayController = (() => {
   const cells = document.querySelectorAll('.cell');
   const singlePlayerButton = document.querySelector('.single-player');
   const output = document.querySelector('.output-display');
-  const turn = document.querySelector('.turn-counter');
+  const turnCounter = document.querySelector('.turn-counter');
   const resetButton = document.querySelector('.resetButton');
 
   const render = () => {
@@ -154,14 +154,21 @@ const DisplayController = (() => {
   
     startGameButton.addEventListener('click', (e) => {
       e.preventDefault();
-      output.textContent = "Game started! Turn 1";
+      output.textContent = "Game started!";
       updateTurnCounter(1);
-      // Add additional logic to start the game
+      startGameButton.remove();
+      // Add additional logic to start single game
     });
   };
 
   const updateTurnCounter = (turn) => {
-    turnCounterDisplay.textContent = `Turn ${turn}`;
+    turnCounter.textContent = `Turn ${turn}`;
+    output.textContent = "";
+  };
+
+  const showResult = (message) => {
+    turnCounter.remove();
+    output.textContent = message;
   };
 
   resetButton.addEventListener('click', () => {
@@ -169,11 +176,9 @@ const DisplayController = (() => {
     output.textContent = "Please choose game mode.";
   });
 
-  return { render };
+  return { render, updateTurnCounter, showResult };
 })();
-                                    // ---***END OF Display Controller Module***---
-    
-                                    // ---***                                  
+                                    // ---***END OF Display Controller Module***---                        
 
 
 // TO DO:
