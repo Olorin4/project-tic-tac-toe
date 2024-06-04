@@ -43,8 +43,11 @@ const Player = (() => {
   ];
 
   const getPlayers = () => players;
+  const setPlayerName = (index, name) => {
+    players[index].name = name;
+  };
 
-  return { getPlayers };                                // The two players objects are made public
+  return { getPlayers, setPlayerName };                                // The two players objects are made public
 })();                                                   // indirectly, through the 'getPlayers' method.
                                   // ---***END OF Players Factory***---
 
@@ -58,6 +61,12 @@ const Game = (() => {
   let gameOver = false;
   let turnCounter = 1;
   let multiplayer = false;
+
+  const setMultiplayer = (isMultiplayer) => {
+    multiplayer = isMultiplayer;
+  };
+
+  const getMultiplayer = () => multiplayer;
 
   const checkWin = (board, marker) => {                   // Can access the board through the .getboard
     const winConditions = [
@@ -74,44 +83,46 @@ const Game = (() => {
   const checkDraw = (board) => !board.some(cell => cell === ''); // If there are no empty cells, return True.
 
   const switchPlayer = () => {
-    currentPlayer = currentPlayer === player1 ? (multiplayer ? player2 : skynet) : player1;
-    turnCounter++;
+    currentPlayer = currentPlayer === player1 ? player2 : player1;
     DisplayController.updateTurnCounter(turnCounter);
   };
-
-  const handlePlayerClick = (index) => {
-    if (!gameOver && Gameboard.markCell(index, currentPlayer.marker)) {
+  
+  const handlePlayer1Click = (index) => {
+    if (!gameOver && Gameboard.markCell(index, player1.marker)) {
       DisplayController.render();
-      if (checkWin(Gameboard.getBoard(), currentPlayer.marker)) {
-        DisplayController.showResult(`${currentPlayer.name} wins!`);
+      if (checkWin(Gameboard.getBoard(), player1.marker)) {
+        DisplayController.showResult("Congratulations, you defeated Skynet! Humanity is safe.");
         gameOver = true;
       } else if (checkDraw(Gameboard.getBoard())) {
-        DisplayController.showResult("It's a draw!");
+        DisplayController.showResult("It's a draw! Skynet's launch countdown is reset. Play again to prevent it from launching its nukes.");
         gameOver = true;
       } else {
-        switchPlayer();
-        if (!multiplayer && currentPlayer === skynet) {
-          handleSkynetClick();
+        turnCounter++;
+        if (Game.getMultiplayer()) {
+          switchPlayer();
+        } else {
+          handlePlayer2Click();
         }
       }
     }
   };
-
-  const handleSkynetClick = () => {
+  
+  const handlePlayer2Click = () => {
     let index;
     do {
       index = Math.floor(Math.random() * 9);
     } while (!Gameboard.isCellEmpty(index));
-
-    if (Gameboard.markCell(index, skynet.marker)) {
+  
+    if (Gameboard.markCell(index, player2.marker)) {
       DisplayController.render();
-      if (checkWin(Gameboard.getBoard(), skynet.marker)) {
+      if (checkWin(Gameboard.getBoard(), player2.marker)) {
         DisplayController.showResult("Skynet wins! The future is now uncertain...");
         gameOver = true;
       } else if (checkDraw(Gameboard.getBoard())) {
         DisplayController.showResult("It's a draw! Skynet's launch countdown is reset. Play again to prevent it from launching its nukes.");
         gameOver = true;
       } else {
+        turnCounter++;
         switchPlayer();
       }
     }
@@ -128,12 +139,8 @@ const Game = (() => {
   };
 
   const isGameOver = () => gameOver;
-
-  const setMultiplayer = (value) => {
-    multiplayer = value;
-  };
   
-  return { handlePlayerClick, resetGame, isGameOver, setMultiplayer };
+  return { handlePlayer1Click, resetGame, isGameOver, setMultiplayer, getMultiplayer };
 })();
                                   // ---***END OF Game Module***---
                                   
@@ -168,7 +175,7 @@ const DisplayController = (() => {
   cells.forEach((cell, index) => {
     cell.addEventListener('click', () => {
       if (!Game.isGameOver()) {
-        Game.handlePlayerClick(index);
+        Game.handlePlayer1Click(index);
       }
     });
   });
@@ -176,39 +183,86 @@ const DisplayController = (() => {
   const singlePlayer = (() => {
     singlePlayerButton.addEventListener('click', (e) => {
       e.preventDefault();
-      output.textContent = "You must defeat Skynet to prevent it from launching its nukes."
+      removeNameInputs();
+      output.textContent = "You must defeat Skynet to prevent it from launching its nukes.";
       Game.setMultiplayer(false);
       createStartGameButton();
     });
   })();
-
+  
   const multiplayer = (() => {
     multiplayerButton.addEventListener('click', (e) => {
       e.preventDefault();
-      output.textContent = "Two Player Mode. Take turns to play.";
+      output.textContent = "Two Player Mode. Please choose your names.";
       Game.setMultiplayer(true);
+      createNameInputs();
       createStartGameButton();
     });
   })();
-
+  
   const createStartGameButton = () => {
-    const startGameButton = document.createElement('button');
-    startGameButton.classList.add('start-game');
-    startGameButton.textContent = 'Start Game';
-    output.insertAdjacentElement('afterend', startGameButton);
-
-    startGameButton.addEventListener('click', (e) => {
-      e.preventDefault();
-      output.textContent = "Game started!";
-      updateTurnCounter(1);
-      startGameButton.remove();
-      Game.resetGame();
-      enableCells();
-    });
+    if (!document.querySelector('.start-game')) {
+      const startGameButton = document.createElement('button');
+      startGameButton.classList.add('start-game');
+      startGameButton.textContent = 'Start Game';
+  
+      const nameInputs = document.querySelector('.name-inputs');
+      if (nameInputs) {
+        // Append inputs before the start button
+        output.insertAdjacentElement('afterend', startGameButton);
+        startGameButton.insertAdjacentElement('beforebegin', nameInputs);
+      } else {
+        // If there are no name inputs, just append the start button after the output
+        output.insertAdjacentElement('afterend', startGameButton);
+      }
+  
+      startGameButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (Game.setMultiplayer) {
+          const player1NameInput = document.querySelector('.player1-name');
+          const player2NameInput = document.querySelector('.player2-name');
+          if (player1NameInput && player2NameInput) {
+            Player.setPlayerName(0, player1NameInput.value || "Player 1");
+            Player.setPlayerName(1, player2NameInput.value || "Player 2");
+          }
+        }
+        output.textContent = "Game started!";
+        updateTurnCounter(1);
+        startGameButton.remove();
+        removeNameInputs();
+        Game.resetGame();
+        enableCells();
+      });
+    }
+  };
+  
+  const createNameInputs = () => {
+    if (!document.querySelector('.name-inputs')) {
+      const nameInputs = document.createElement('div');
+      nameInputs.classList.add('name-inputs');
+      nameInputs.innerHTML = `
+        <input type="text" class="player1-name" placeholder="Player 1 Name">
+        <input type="text" class="player2-name" placeholder="Player 2 Name">
+      `;
+      output.insertAdjacentElement('afterend', nameInputs);
+    }
+  };
+  
+  const removeNameInputs = () => {
+    const nameInputs = document.querySelector('.name-inputs');
+    if (nameInputs) {
+      nameInputs.remove();
+    }
   };
 
   const updateTurnCounter = (turn) => {
-    turnCounter.textContent = `Turn ${turn}`;
+    if (Game.getMultiplayer()) {
+      const players = Player.getPlayers();
+      const currentPlayer = turn % 2 === 1 ? players[0].name : players[1].name;
+      turnCounter.textContent = `It's ${currentPlayer}'s turn`;
+    } else {
+      turnCounter.textContent = `Turn ${Math.ceil(turn / 2)}`;
+    }
     output.textContent = "";
   };
 
@@ -235,7 +289,5 @@ const DisplayController = (() => {
 
 
 // TO DO:
-// - Prevent clicks when game is not started.
-// - Add multiplayer functionality.
 // - Add more complex AI game logic.
 // - Upgrade UI.

@@ -89,7 +89,7 @@ button:hover {
 .display-controller {
   grid-column: 2;
   grid-row: 2;
-  height: 115px;
+  height: 140px;
   width: 320px;
   border: 1px solid #0c0c0c;
   box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.2);
