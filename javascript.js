@@ -124,6 +124,7 @@ const Game = (() => {
     turnCounter = 1;
     DisplayController.updateTurnCounter(turnCounter);
     DisplayController.render();
+    DisplayController.disableCells();
   };
 
   const isGameOver = () => gameOver;
@@ -149,6 +150,18 @@ const DisplayController = (() => {
     const board = Gameboard.getBoard();
     cells.forEach((cell, index) => {
       cell.textContent = board[index];
+    });
+  };
+
+  const enableCells = () => {
+    cells.forEach(cell => {
+      cell.classList.remove('disabled');
+    });
+  };
+
+  const disableCells = () => {
+    cells.forEach(cell => {
+      cell.classList.add('disabled');
     });
   };
 
@@ -183,14 +196,14 @@ const DisplayController = (() => {
     startGameButton.classList.add('start-game');
     startGameButton.textContent = 'Start Game';
     output.insertAdjacentElement('afterend', startGameButton);
-  
+
     startGameButton.addEventListener('click', (e) => {
       e.preventDefault();
       output.textContent = "Game started!";
       updateTurnCounter(1);
       startGameButton.remove();
       Game.resetGame();
-      // Add additional logic to start single game
+      enableCells();
     });
   };
 
@@ -201,6 +214,7 @@ const DisplayController = (() => {
 
   const showResult = (message) => {
     turnCounter.remove();
+    disableCells();
     output.textContent = message;
   };
 
@@ -209,7 +223,9 @@ const DisplayController = (() => {
     output.textContent = "Please choose game mode.";
   });
 
-  return { render, updateTurnCounter, showResult };
+  disableCells();
+
+  return { render, updateTurnCounter, showResult, disableCells };
 })();
                                     // ---***END OF Display Controller Module***---     
             
