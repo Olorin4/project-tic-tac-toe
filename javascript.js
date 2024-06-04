@@ -29,8 +29,12 @@ const Gameboard = (() => {
 const Player = (() => {
   const players = [                                 
     {
-      name: "You",
+      name: "Player 1",
       marker: "X"
+    },
+    {
+      name: "Player 2",
+      marker: "O"
     },
     {
       name: "Skynet",
@@ -49,9 +53,11 @@ const Player = (() => {
 const Game = (() => {
   const player1 = Player.getPlayers()[0];
   const player2 = Player.getPlayers()[1];
+  const skynet = Player.getPlayers()[2];
   let currentPlayer = player1;
   let gameOver = false;
   let turnCounter = 1;
+  let multiplayer = false;
 
   const checkWin = (board, marker) => {                   // Can access the board through the .getboard
     const winConditions = [
@@ -68,35 +74,38 @@ const Game = (() => {
   const checkDraw = (board) => !board.some(cell => cell === ''); // If there are no empty cells, return True.
 
   const switchPlayer = () => {
-    currentPlayer = currentPlayer === player1 ? player2 : player1;
+    currentPlayer = currentPlayer === player1 ? (multiplayer ? player2 : skynet) : player1;
     turnCounter++;
     DisplayController.updateTurnCounter(turnCounter);
   };
 
-  const handlePlayer1Click = (index) => {
-    if (!gameOver && Gameboard.markCell(index, player1.marker)) {
+  const handlePlayerClick = (index) => {
+    if (!gameOver && Gameboard.markCell(index, currentPlayer.marker)) {
       DisplayController.render();
-      if (checkWin(Gameboard.getBoard(), player1.marker)) {
-        DisplayController.showResult("Congratulations, you defeated Skynet! Humanity is safe.");
+      if (checkWin(Gameboard.getBoard(), currentPlayer.marker)) {
+        DisplayController.showResult(`${currentPlayer.name} wins!`);
         gameOver = true;
       } else if (checkDraw(Gameboard.getBoard())) {
-        DisplayController.showResult("It's a draw! Skynet's launch countdown is reset. Play again to prevent it from launching its nukes");
+        DisplayController.showResult("It's a draw!");
         gameOver = true;
       } else {
-        handlePlayer2Click();
+        switchPlayer();
+        if (!multiplayer && currentPlayer === skynet) {
+          handleSkynetClick();
+        }
       }
     }
   };
 
-  const handlePlayer2Click = () => {
+  const handleSkynetClick = () => {
     let index;
     do {
       index = Math.floor(Math.random() * 9);
     } while (!Gameboard.isCellEmpty(index));
 
-    if (Gameboard.markCell(index, player2.marker)) {
+    if (Gameboard.markCell(index, skynet.marker)) {
       DisplayController.render();
-      if (checkWin(Gameboard.getBoard(), player2.marker)) {
+      if (checkWin(Gameboard.getBoard(), skynet.marker)) {
         DisplayController.showResult("Skynet wins! The future is now uncertain...");
         gameOver = true;
       } else if (checkDraw(Gameboard.getBoard())) {
@@ -112,10 +121,18 @@ const Game = (() => {
     Gameboard.resetBoard();
     currentPlayer = player1;
     gameOver = false;
+    turnCounter = 1;
+    DisplayController.updateTurnCounter(turnCounter);
     DisplayController.render();
   };
+
+  const isGameOver = () => gameOver;
+
+  const setMultiplayer = (value) => {
+    multiplayer = value;
+  };
   
-  return { handlePlayer1Click, resetGame };
+  return { handlePlayerClick, resetGame, isGameOver, setMultiplayer };
 })();
                                   // ---***END OF Game Module***---
                                   
@@ -123,6 +140,7 @@ const Game = (() => {
 const DisplayController = (() => {
   const cells = document.querySelectorAll('.cell');
   const singlePlayerButton = document.querySelector('.single-player');
+  const multiplayerButton = document.querySelector('.multiplayer');
   const output = document.querySelector('.output-display');
   const turnCounter = document.querySelector('.turn-counter');
   const resetButton = document.querySelector('.resetButton');
@@ -130,18 +148,32 @@ const DisplayController = (() => {
   const render = () => {
     const board = Gameboard.getBoard();
     cells.forEach((cell, index) => {
-      cell.textContent = Gameboard.getBoard()[index];
+      cell.textContent = board[index];
     });
   };
 
   cells.forEach((cell, index) => {
-    cell.addEventListener('click', () => Game.handlePlayer1Click(index));
+    cell.addEventListener('click', () => {
+      if (!Game.isGameOver()) {
+        Game.handlePlayerClick(index);
+      }
+    });
   });
 
   const singlePlayer = (() => {
     singlePlayerButton.addEventListener('click', (e) => {
       e.preventDefault();
       output.textContent = "You must defeat Skynet to prevent it from launching its nukes."
+      Game.setMultiplayer(false);
+      createStartGameButton();
+    });
+  })();
+
+  const multiplayer = (() => {
+    multiplayerButton.addEventListener('click', (e) => {
+      e.preventDefault();
+      output.textContent = "Two Player Mode. Take turns to play.";
+      Game.setMultiplayer(true);
       createStartGameButton();
     });
   })();
@@ -157,6 +189,7 @@ const DisplayController = (() => {
       output.textContent = "Game started!";
       updateTurnCounter(1);
       startGameButton.remove();
+      Game.resetGame();
       // Add additional logic to start single game
     });
   };
@@ -178,11 +211,15 @@ const DisplayController = (() => {
 
   return { render, updateTurnCounter, showResult };
 })();
-                                    // ---***END OF Display Controller Module***---                        
+                                    // ---***END OF Display Controller Module***---     
+            
+                                    
+
+
 
 
 // TO DO:
-// 1. Replace console.logs with uI messages.
-// 2. Add multiplayer & singleplayer functionality.
-// 3. Add more complex AI game logic.
-// 4. Upgrade UI.
+// - Prevent clicks when game is not started.
+// - Add multiplayer functionality.
+// - Add more complex AI game logic.
+// - Upgrade UI.
