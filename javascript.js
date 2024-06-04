@@ -1,6 +1,6 @@
 // TIC TAC TOE
 
-                                  // ---***Gameboard Module: Handles the game state***---
+                     // ---***Gameboard Module: Handles the game state***---
 const Gameboard = (() => {
   let board = ["", "", "", "", "", "", "", "", ""];
 
@@ -22,10 +22,10 @@ const Gameboard = (() => {
 
   return { getBoard, isCellEmpty, markCell, resetBoard };
 })();
-                                  // ---***END OF Gameboard Module***---
+                     // ---***END OF Gameboard Module***---
   
 
-                                  // ---***Player Factory: Creates player objects***---
+                     // ---***Player Factory: Creates player objects***---
 const Player = (() => {
   const players = [                                 
     { name: "Player 1", marker: "X" },
@@ -40,10 +40,10 @@ const Player = (() => {
 
   return { getPlayers, setPlayerName };                                
 })();                                                   
-                                  // ---***END OF Players Factory***---
+                     // ---***END OF Players Factory***---
 
 
-                                  // ---***Game Module: Controls the flow of the game***---
+                     // ---***Game Module: Controls the flow of the game***---
 const Game = (() => {
   const players = Player.getPlayers();
   let currentPlayer = players[0];
@@ -131,9 +131,9 @@ const Game = (() => {
   
   return { handlePlayer1Click, resetGame, isGameOver, setMultiplayer, getMultiplayer };
 })();
-                                  // ---***END OF Game Module***---
+                     // ---***END OF Game Module***---
                                   
-                                  // ---***Display Controller Module: Handles the display and DOM logic***---
+                     // ---***Display Controller Module: Handles the display and DOM logic***---
 const DisplayController = (() => {
   const cells = document.querySelectorAll('.cell');
   const singlePlayerButton = document.querySelector('.single-player');
@@ -271,12 +271,12 @@ const DisplayController = (() => {
 
   return { render, updateTurnCounter, showResult, disableCells };
 })();
-                                    // ---***END OF Display Controller Module***---     
+                       // ---***END OF Display Controller Module***---     
             
                                     
 
 
-                                    
+
 // TO DO:
 // - Add more complex AI game logic.
 // - Upgrade UI.
