@@ -59,9 +59,9 @@ const Game = (() => {
 
   const checkWin = (board, marker) => {
     const winConditions = [
-      [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
-      [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
-      [0, 4, 8], [2, 4, 6] // diagonals
+      [0, 1, 2], [3, 4, 5], [6, 7, 8],        // rows
+      [0, 3, 6], [1, 4, 7], [2, 5, 8],        // columns
+      [0, 4, 8], [2, 4, 6]                    // diagonals
     ];
 
     return winConditions.some(combination =>
@@ -80,33 +80,38 @@ const Game = (() => {
     if (!gameOver && Gameboard.markCell(index, currentPlayer.marker)) {
       DisplayController.render();
       if (checkWin(Gameboard.getBoard(), currentPlayer.marker)) {
-        DisplayController.showResult(`${currentPlayer.name} wins!`);
+        if (Game.getMultiplayer()) {
+          DisplayController.showResult(`${currentPlayer.name} wins!`);
+        } else {
+          DisplayController.showResult("You win!");
+        }
         gameOver = true;
       } else if (checkDraw(Gameboard.getBoard())) {
         DisplayController.showResult("It's a draw!");
         gameOver = true;
       } else {
         turnCounter++;
-        if (getMultiplayer()) {
+        if (Game.getMultiplayer()) {
           switchPlayer();
         } else {
-          handleSkynetClick(); // Use Skynet's turn in single player mode
+          handleSkynetClick();
         }
       }
     }
   };
 
   const handlePlayer2Click = () => {
-    if (!gameOver && Gameboard.markCell(index, players[1].marker)) {
+    if (Gameboard.markCell(index, players[1].marker)) {
       DisplayController.render();
       if (checkWin(Gameboard.getBoard(), players[1].marker)) {
         DisplayController.showResult("Player 2 wins!");
         gameOver = true;
       } else if (checkDraw(Gameboard.getBoard())) {
-        DisplayController.showResult("It's a draw! Play again.");
+        DisplayController.showResult("It's a draw!");
         gameOver = true;
       } else {
         turnCounter++;
+        DisplayController.updateTurnCounter(turnCounter);
         switchPlayer();
       }
     }
@@ -121,14 +126,14 @@ const Game = (() => {
     if (Gameboard.markCell(index, players[2].marker)) {
       DisplayController.render();
       if (checkWin(Gameboard.getBoard(), players[2].marker)) {
-        DisplayController.showResult("Skynet wins!");
+        DisplayController.showResult("Skynet wins! The future is now uncertain...");
         gameOver = true;
       } else if (checkDraw(Gameboard.getBoard())) {
-        DisplayController.showResult("It's a draw!");
+        DisplayController.showResult("It's a draw! Skynet's launch countdown is reset. Play again to prevent it from launching its nukes.");
         gameOver = true;
       } else {
         turnCounter++;
-        // No need to switch player here because it's single-player mode
+        DisplayController.updateTurnCounter(turnCounter);
       }
     }
   };
@@ -217,11 +222,9 @@ const DisplayController = (() => {
 
       const nameInputs = document.querySelector('.name-inputs');
       if (nameInputs) {
-        // Append inputs before the start button
         output.insertAdjacentElement('afterend', startGameButton);
         startGameButton.insertAdjacentElement('beforebegin', nameInputs);
       } else {
-        // If there are no name inputs, just append the start button after the output
         output.insertAdjacentElement('afterend', startGameButton);
       }
 
@@ -297,7 +300,5 @@ const DisplayController = (() => {
 
 
 // TO DO:
-// - Fix bug: draw message in single player is wrong.
-// - Fix bug: victory messages are messed up.
 // - Add more complex AI game logic.
 // - Upgrade UI.
