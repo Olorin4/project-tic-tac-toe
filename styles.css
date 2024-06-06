@@ -23,6 +23,7 @@ body {
   justify-content: center;
   align-items: center;
   gap: 10px;
+  height: 100%;
 }
 
 h1 {
