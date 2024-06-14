@@ -2,28 +2,30 @@
 
                      // ---***Gameboard Class: Handles the game state***---
 class Gameboard {
+  #board;
+
   constructor() {
-    this.board = ["", "", "", "", "", "", "", "", ""];
+    this.#board = ["", "", "", "", "", "", "", "", ""];
   }
 
   getBoard() {
-    return this.board;
+    return this.#board;
   }
 
   isCellEmpty(index) {
-    return this.board[index] === "";
+    return this.#board[index] === "";
   }
 
   markCell(index, marker) {
     if (this.isCellEmpty(index)) {
-      this.board[index] = marker;
+      this.#board[index] = marker;
       return true;
     }
     return false;
   }
 
   resetBoard() {
-    this.board = ["", "", "", "", "", "", "", "", ""];
+    this.#board = ["", "", "", "", "", "", "", "", ""];
   }
 }
                      // ---***END OF Gameboard Class***---
@@ -42,13 +44,17 @@ class Player {
                      // ---***Game Class: Controls the flow of the game***---
 class Game {
   constructor(displayController) {
-    this.players = [new Player("Player 1", "X"), new Player("Player 2", "O"), new Player("Skynet", "O")];
+    this.players = [
+      new Player("Player 1", "X"),
+      new Player("Player 2", "O"),
+      new Player("Skynet", "O")
+    ];
     this.currentPlayer = this.players[0];
     this.gameOver = false;
     this.turnCounter = 1;
     this.multiplayer = false;
-    this.displayController = displayController;
     this.board = new Gameboard();
+    this.displayController = displayController;
   }
 
   setMultiplayer(isMultiplayer) {
