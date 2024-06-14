@@ -1,63 +1,65 @@
 // TIC TAC TOE
 
-                     // ---***Gameboard Module: Handles the game state***---
-const Gameboard = (() => {
-  let board = ["", "", "", "", "", "", "", "", ""];
+                     // ---***Gameboard Class: Handles the game state***---
+class Gameboard {
+  constructor() {
+    this.board = ["", "", "", "", "", "", "", "", ""];
+  }
 
-  const getBoard = () => board;
+  getBoard() {
+    return this.board;
+  }
 
-  const isCellEmpty = (index) => board[index] === "";
+  isCellEmpty(index) {
+    return this.board[index] === "";
+  }
 
-  const markCell = (index, marker) => {
-    if (isCellEmpty(index)) {
-      board[index] = marker;
+  markCell(index, marker) {
+    if (this.isCellEmpty(index)) {
+      this.board[index] = marker;
       return true;
     }
     return false;
-  };
+  }
 
-  const resetBoard = () => {
-    board = ['', '', '', '', '', '', '', '', ''];
-  };
-
-  return { getBoard, isCellEmpty, markCell, resetBoard };
-})();
-                     // ---***END OF Gameboard Module***---
+  resetBoard() {
+    this.board = ["", "", "", "", "", "", "", "", ""];
+  }
+}
+                     // ---***END OF Gameboard Class***---
   
 
-                     // ---***Player Factory: Creates player objects***---
-const Player = (() => {
-  const players = [                                 
-    { name: "Player 1", marker: "X" },
-    { name: "Player 2", marker: "O" },
-    { name: "Skynet", marker: "O" }
-  ];
-
-  const getPlayers = () => players;
-  const setPlayerName = (index, name) => {
-    players[index].name = name;
-  };
-
-  return { getPlayers, setPlayerName };                                
-})();                                                   
-                     // ---***END OF Players Factory***---
+                     // ---***Player Class: Creates player objects***---
+class Player {
+  constructor(name, marker) {                     
+    this.name = name;
+    this.marker = marker;
+  }
+}                                                
+                     // ---***END OF Players Class***---
 
 
-                     // ---***Game Module: Controls the flow of the game***---
-const Game = (() => {
-  const players = Player.getPlayers();
-  let currentPlayer = players[0];
-  let gameOver = false;
-  let turnCounter = 1;
-  let multiplayer = false;
+                     // ---***Game Class: Controls the flow of the game***---
+class Game {
+  constructor(displayController) {
+    this.players = [new Player("Player 1", "X"), new Player("Player 2", "O"), new Player("Skynet", "O")];
+    this.currentPlayer = this.players[0];
+    this.gameOver = false;
+    this.turnCounter = 1;
+    this.multiplayer = false;
+    this.displayController = displayController;
+    this.board = new Gameboard();
+  }
 
-  const setMultiplayer = (isMultiplayer) => {
-    multiplayer = isMultiplayer;
-  };
+  setMultiplayer(isMultiplayer) {
+    this.multiplayer = isMultiplayer;
+  }
 
-  const getMultiplayer = () => multiplayer;
+  getMultiplayer() {
+    return this.multiplayer;
+  }
 
-  const checkWin = (board, marker) => {
+  checkWin(marker) {
     const winConditions = [
       [0, 1, 2], [3, 4, 5], [6, 7, 8],        // rows
       [0, 3, 6], [1, 4, 7], [2, 5, 8],        // columns
@@ -65,156 +67,143 @@ const Game = (() => {
     ];
 
     return winConditions.some(combination =>
-      combination.every(index => board[index] === marker)
+      combination.every(index => this.board.getBoard()[index] === marker)
     );
-  };
+  }
 
-  const checkDraw = (board) => !board.some(cell => cell === '');
+  checkDraw() {
+    return !this.board.getBoard().some(cell => cell === '');
+  }
 
-  const switchPlayer = () => {
-    currentPlayer = currentPlayer === players[0] ? players[1] : players[0];
-    DisplayController.updateTurnCounter(turnCounter);
-  };
+  switchPlayer() {
+    this.currentPlayer = this.currentPlayer === this.players[0] ? this.players[1] : this.players[0];
+    this.displayController.updateTurnCounter(this.turnCounter);
+  }
 
-  const handlePlayer1Click = (index) => {
-    if (!gameOver && Gameboard.markCell(index, currentPlayer.marker)) {
-      DisplayController.render();
-      if (checkWin(Gameboard.getBoard(), currentPlayer.marker)) {
-        if (Game.getMultiplayer()) {
-          DisplayController.showResult(`${currentPlayer.name} wins!`);
+  handlePlayerClick(index) {
+    if (!this.gameOver && this.board.markCell(index, this.currentPlayer.marker)) {
+      this.displayController.render();
+      if (this.checkWin(this.currentPlayer.marker)) {
+        if (this.getMultiplayer()) {
+          this.displayController.showResult(`${this.currentPlayer.name} wins!`);
         } else {
-          DisplayController.showResult("You win!");
+          this.displayController.showResult("You win!");
         }
-        gameOver = true;
-      } else if (checkDraw(Gameboard.getBoard())) {
-        DisplayController.showResult("It's a draw!");
-        gameOver = true;
+        this.gameOver = true;
+      } else if (this.checkDraw()) {
+        this.displayController.showResult("It's a draw!");
+        this.gameOver = true;
       } else {
-        turnCounter++;
-        if (Game.getMultiplayer()) {
-          switchPlayer();
+        this.turnCounter++;
+        if (this.getMultiplayer()) {
+          this.switchPlayer();
         } else {
-          handleSkynetClick();
+          this.handleSkynetClick();
         }
       }
     }
-  };
+  }
 
-  const handlePlayer2Click = () => {
-    if (Gameboard.markCell(index, players[1].marker)) {
-      DisplayController.render();
-      if (checkWin(Gameboard.getBoard(), players[1].marker)) {
-        DisplayController.showResult("Player 2 wins!");
-        gameOver = true;
-      } else if (checkDraw(Gameboard.getBoard())) {
-        DisplayController.showResult("It's a draw!");
-        gameOver = true;
-      } else {
-        turnCounter++;
-        DisplayController.updateTurnCounter(turnCounter);
-        switchPlayer();
-      }
-    }
-  };
-
-  const handleSkynetClick = () => {
+  handleSkynetClick() {
     let index;
     do {
       index = Math.floor(Math.random() * 9);
-    } while (!Gameboard.isCellEmpty(index));
+    } while (!this.board.isCellEmpty(index));
 
-    if (Gameboard.markCell(index, players[2].marker)) {
-      DisplayController.render();
-      if (checkWin(Gameboard.getBoard(), players[2].marker)) {
-        DisplayController.showResult("Skynet wins! The future is now uncertain...");
-        gameOver = true;
-      } else if (checkDraw(Gameboard.getBoard())) {
-        DisplayController.showResult("It's a draw! Skynet's launch countdown is reset. Play again to prevent it from launching its nukes.");
-        gameOver = true;
+    if (this.board.markCell(index, this.players[2].marker)) {
+      this.displayController.render();
+      if (this.checkWin(this.players[2].marker)) {
+        this.displayController.showResult("Skynet wins! The future is now uncertain...");
+        this.gameOver = true;
+      } else if (this.checkDraw()) {
+        this.displayController.showResult("It's a draw! Skynet's launch countdown is reset. Play again to prevent it from launching its nukes.");
+        this.gameOver = true;
       } else {
-        turnCounter++;
-        DisplayController.updateTurnCounter(turnCounter);
+        this.turnCounter++;
+        this.displayController.updateTurnCounter(this.turnCounter);
       }
     }
-  };
+  }
 
-  const resetGame = () => {
-    Gameboard.resetBoard();
-    currentPlayer = players[0];
-    gameOver = false;
-    turnCounter = 1;
-    DisplayController.updateTurnCounter(turnCounter);
-    DisplayController.render();
-    DisplayController.disableCells();
-  };
+  resetGame() {
+    this.board.resetBoard();
+    this.currentPlayer = this.players[0];
+    this.gameOver = false;
+    this.turnCounter = 1;
+    this.displayController.updateTurnCounter(this.turnCounter);
+    this.displayController.render();
+    this.displayController.disableCells();
+  }
 
-  const isGameOver = () => gameOver;
-
-  return { handlePlayer1Click, resetGame, isGameOver, setMultiplayer, getMultiplayer };
-})();
-                     // ---***END OF Game Module***---
+  isGameOver() {
+    return this.gameOver;
+  }
+}
+                     // ---***END OF Game Class***---
                                   
-                     // ---***Display Controller Module: Handles the display and DOM logic***---
-const DisplayController = (() => {
-  const cells = document.querySelectorAll('.cell');
-  const singlePlayerButton = document.querySelector('.single-player');
-  const multiplayerButton = document.querySelector('.multiplayer');
-  const output = document.querySelector('.output-display');
-  const turnCounter = document.querySelector('.turn-counter');
-  const resetButton = document.querySelector('.resetButton');
+                     // ---***Display Controller Class: Handles the display and DOM logic***---
+class DisplayController {
+  constructor(game) {
+    this.cells = document.querySelectorAll('.cell');
+    this.singlePlayerButton = document.querySelector('.single-player');
+    this.multiplayerButton = document.querySelector('.multiplayer');
+    this.output = document.querySelector('.output-display');
+    this.turnCounter = document.querySelector('.turn-counter');
+    this.resetButton = document.querySelector('.resetButton');
+    this.game = game;
 
-  const render = () => {
-    const board = Gameboard.getBoard();
-    cells.forEach((cell, index) => {
+    this.cells.forEach((cell, index) => {
+      cell.addEventListener('click', () => {
+        if (!this.game.isGameOver()) {
+          this.game.handlePlayerClick(index);
+        }
+      });
+    });
+
+    this.singlePlayerButton.addEventListener('click', (e) => {
+      e.preventDefault();
+      this.removeNameInputs();
+      this.output.textContent = "You must defeat Skynet to prevent it from launching its nukes.";
+      this.game.setMultiplayer(false);
+      this.createStartGameButton();
+    });
+
+    this.multiplayerButton.addEventListener('click', (e) => {
+      e.preventDefault();
+      this.output.textContent = "Two Player Mode. Please choose your names.";
+      this.game.setMultiplayer(true);
+      this.createNameInputs();
+      this.createStartGameButton();
+    });
+
+    this.resetButton.addEventListener('click', () => {
+      this.game.resetGame();
+      this.output.textContent = "Please choose game mode.";
+    });
+
+    this.disableCells();
+  }
+
+  render() {
+    const board = this.game.board.getBoard();
+    this.cells.forEach((cell, index) => {
       cell.textContent = board[index];
     });
-  };
+  }
 
-  const enableCells = () => {
-    cells.forEach(cell => {
+  enableCells() {
+    this.cells.forEach(cell => {
       cell.classList.remove('disabled');
     });
-  };
+  }
 
-  const disableCells = () => {
-    cells.forEach(cell => {
+  disableCells() {
+    this.cells.forEach(cell => {
       cell.classList.add('disabled');
     });
-  };
+  }
 
-  cells.forEach((cell, index) => {
-    cell.addEventListener('click', () => {
-      if (!Game.isGameOver()) {
-        if (Game.getMultiplayer()) {
-          Game.handlePlayer1Click(index);
-        } else {
-          Game.handlePlayer1Click(index);
-        }
-      }
-    });
-  });
-
-  const singlePlayer = (() => {
-    singlePlayerButton.addEventListener('click', (e) => {
-      e.preventDefault();
-      removeNameInputs();
-      output.textContent = "You must defeat Skynet to prevent it from launching its nukes.";
-      Game.setMultiplayer(false);
-      createStartGameButton();
-    });
-  })();
-
-  const multiplayer = (() => {
-    multiplayerButton.addEventListener('click', (e) => {
-      e.preventDefault();
-      output.textContent = "Two Player Mode. Please choose your names.";
-      Game.setMultiplayer(true);
-      createNameInputs();
-      createStartGameButton();
-    });
-  })();
-
-  const createStartGameButton = () => {
+  createStartGameButton() {
     if (!document.querySelector('.start-game')) {
       const startGameButton = document.createElement('button');
       startGameButton.classList.add('start-game');
@@ -222,33 +211,33 @@ const DisplayController = (() => {
 
       const nameInputs = document.querySelector('.name-inputs');
       if (nameInputs) {
-        output.insertAdjacentElement('afterend', startGameButton);
+        this.output.insertAdjacentElement('afterend', startGameButton);
         startGameButton.insertAdjacentElement('beforebegin', nameInputs);
       } else {
-        output.insertAdjacentElement('afterend', startGameButton);
+        this.output.insertAdjacentElement('afterend', startGameButton);
       }
 
       startGameButton.addEventListener('click', (e) => {
         e.preventDefault();
-        if (Game.setMultiplayer) {
+        if (this.game.getMultiplayer()) {
           const player1NameInput = document.querySelector('.player1-name');
           const player2NameInput = document.querySelector('.player2-name');
           if (player1NameInput && player2NameInput) {
-            Player.setPlayerName(0, player1NameInput.value || "Player 1");
-            Player.setPlayerName(1, player2NameInput.value || "Player 2");
+            this.game.players[0].name = player1NameInput.value || "Player 1";
+            this.game.players[1].name = player2NameInput.value || "Player 2";
           }
         }
-        output.textContent = "Game started!";
-        updateTurnCounter(1);
+        this.output.textContent = "Game started!";
+        this.updateTurnCounter(1);
         startGameButton.remove();
-        removeNameInputs();
-        Game.resetGame();
-        enableCells();
+        this.removeNameInputs();
+        this.game.resetGame();
+        this.enableCells();
       });
     }
-  };
+  }
 
-  const createNameInputs = () => {
+  createNameInputs() {
     if (!document.querySelector('.name-inputs')) {
       const nameInputs = document.createElement('div');
       nameInputs.classList.add('name-inputs');
@@ -256,46 +245,40 @@ const DisplayController = (() => {
         <input type="text" class="player1-name" placeholder="Player 1 Name">
         <input type="text" class="player2-name" placeholder="Player 2 Name">
       `;
-      output.insertAdjacentElement('afterend', nameInputs);
+      this.output.insertAdjacentElement('afterend', nameInputs);
     }
-  };
+  }
 
-  const removeNameInputs = () => {
+  removeNameInputs() {
     const nameInputs = document.querySelector('.name-inputs');
     if (nameInputs) {
       nameInputs.remove();
     }
-  };
+  }
 
-  const updateTurnCounter = (turn) => {
-    if (Game.getMultiplayer()) {
-      const players = Player.getPlayers();
+  updateTurnCounter(turn) {
+    if (this.game.getMultiplayer()) {
+      const players = this.game.players;
       const currentPlayer = turn % 2 === 1 ? players[0].name : players[1].name;
-      turnCounter.textContent = `It's ${currentPlayer}'s turn`;
+      this.turnCounter.textContent = `It's ${currentPlayer}'s turn`;
     } else {
-      turnCounter.textContent = `Turn ${Math.ceil(turn / 2)}`;
+      this.turnCounter.textContent = `Turn ${Math.ceil(turn / 2)}`;
     }
-    output.textContent = "";
-  };
+    this.output.textContent = "";
+  }
 
-  const showResult = (message) => {
-    turnCounter.remove();
-    disableCells();
-    output.textContent = message;
-  };
-
-  resetButton.addEventListener('click', () => {
-    Game.resetGame();
-    output.textContent = "Please choose game mode.";
-  });
-
-  disableCells();
-
-  return { render, updateTurnCounter, showResult, disableCells };
-})();
-                       // ---***END OF Display Controller Module***---        
-            
-                                    
+  showResult(message) {
+    this.turnCounter.remove();
+    this.disableCells();
+    this.output.textContent = message;
+  }
+}
+                       // ---***END OF Display Controller Class***---        
+                                  
+                     // ---***Initialize the game***---
+const displayController = new DisplayController();
+const game = new Game(displayController);
+displayController.game = game;                   
 
 
 
